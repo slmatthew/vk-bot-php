@@ -4,16 +4,24 @@
  * VK PHP Framework for bots
  * by slmatthew
  * follow me: vk.com/slmatthew
- * last update: 24.02.2019
+ * last update: 26.02.2019
  */
 
 class VK {
 
+	/**
+	 * Необходимые переменные для работы фреймворка
+	 */
 	protected const CHAT_PEER_ID = 2000000000;
 
 	protected $group_id;
 	protected $token;
 	protected $v;
+
+	/**
+	 * Переменные, необходимые для некоторых функций
+	 */
+	public $ph_dw_folder = "images"; // директория, где будут храниться фотографии, которые загружаются с другого сервера
 
 	/**
 	 * Указываем необходимые параметры
@@ -65,7 +73,7 @@ class VK {
 	 * @param string $file Путь к файлу
 	 * @return array
 	 */
-	function upload_vk($url, $file) {
+	function upload($url, $file) {
 		$ch = curl_init($url);
 		curl_setopt_array($ch, array(
 			CURLOPT_POST => true,
@@ -110,6 +118,30 @@ class VK {
 		return true; // всё ок
 	}
 
+	/**
+	 * Загрузка фотографий в сообщения
+	 * 
+	 * @param string $filename Путь до файла (абсолютный/относительный)
+	 */
+	public function uploadPhoto(string $filename) {
+		$server = $this->call('photos.getMessagesUploadServer')['response']['upload_url']; // получаем адрес для загрузки фотографии в сообщения
+		$upload = $this->upload($server, $filename); // загружаем фотографию на сервер ВКонтакте
+		$save = $this->call('photos.saveMessagesPhoto', array('photo' => $upload['photo'], 'server' => $upload['server'], 'hash' => $upload['hash'])); // сохраняем фотографию
+		return $save;
+	}
+
+	/**
+	 * Загрузка фотографий в сообщения
+	 * 
+	 * @param string $filename Путь до файла (абсолютный/относительный)
+	 * @param string $type Тип документа, vk.com/dev/docs.getMessagesUploadServer
+	 */
+	public function uploadDoc(string $filename, string $type = 'doc') {
+		$server = $this->call('docs.getMessagesUploadServer')['response']['upload_url']; // получаем адрес для загрузки фотографии в сообщения
+		$upload = $this->upload($server, $filename); // загружаем фотографию на сервер ВКонтакте
+		$save = $this->call('docs.save', array('file' => $upload['file'])); // сохраняем фотографию
+		return $save;
+	}
 	
 }
 
