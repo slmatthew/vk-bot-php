@@ -171,7 +171,7 @@ class VK {
 	 * @return bool
 	 */
 	public function isUserChatMember(int $peer_id, int $member_id) {
-		$api = $this->call('messages.getConversationMembers', ['peer_id' => $peer_id]); // получаем список участников беседы
+		$api = $this->call('messages.getConversationMembers', array('peer_id' => $peer_id)); // получаем список участников беседы
 		if(isset($api['error']) || empty($api['response']['items'])) return false; // если есть ошибка или список пуст - false
 
 		foreach($api['response']['items'] as $p) { // перебираем всех участников беседы
@@ -189,7 +189,7 @@ class VK {
 	 * @return bool
 	 */
 	public function isBotChatMember(int $peer_id) {
-		return (!isset(vkapi('messages.getConversationsById', ['peer_ids' => $peer_id])['error']));
+		return (!isset(vkapi('messages.getConversationsById', array('peer_ids' => $peer_id))['error']));
 	}
 
 	/**
@@ -203,7 +203,7 @@ class VK {
 	 */
 	public function getTextBySex(int $user_id, string $male, string $female, int $sex = -1) {
 		if($sex == -1) {
-			$user = $this->call('users.get', ['user_ids' => $user_id, 'fields' => 'sex']);
+			$user = $this->call('users.get', array('user_ids' => $user_id, 'fields' => 'sex'));
 			if(isset($user['response']) && !empty($user['response'])) {
 				return ($user['sex'] == 1 ? $female : $male);
 			}
