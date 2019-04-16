@@ -176,7 +176,7 @@ class VKBot {
 	}
 
 	/**
-	 * Загрузка фотографий в сообщения
+	 * Загрузка документов в сообщения
 	 *
 	 * @param string $filename Путь до файла (абсолютный/относительный)
 	 * @param string $type Тип документа, vk.com/dev/docs.getMessagesUploadServer
