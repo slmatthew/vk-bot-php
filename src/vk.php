@@ -4,7 +4,7 @@
  * VK PHP Framework for bots
  * by slmatthew
  * follow me: vk.com/slmatthew
- * last update: 26.02.2019
+ * last update: 16.04.2019
  */
 
 class VK {
@@ -12,7 +12,7 @@ class VK {
 	/**
 	 * Необходимые переменные для работы фреймворка
 	 */
-	protected const CHAT_PEER_ID = 2000000000;
+	const CHAT_PEER_ID = 2000000000;
 
 	protected $group_id;
 	protected $token;
@@ -31,15 +31,19 @@ class VK {
 	 * @param string $token access_token, полученный для бота (как минимум, нужны права доступа messages)
 	 * @param string $language Язык возвращаемых данных
 	 * @param string $v Версия API
-	 * @return boolean true
 	 */
-	public function __construct(int $group_id, string $token, string $language = 'ru', string $v = '5.92') {
+	public function __construct(int $group_id, string $token, string $language = null, string $v = null) {
+		if($language === null) {
+			$language = 'ru';
+		}
+		if($v === null) {
+			$v = '5.95';
+		}
+
 		$this->group_id = $group_id;
 		$this->token = $token;
 		$this->lang = $language;
 		$this->v = (string)$v;
-
-		return true;
 	}
 
 	/**
@@ -47,27 +51,35 @@ class VK {
 	 *
 	 * @param string $m Название метода
 	 * @param array $p Параметры
-	 * @return array json_decode($json, true)
+	 * @return array
 	 */
-	public function call(string $m, array $p = array()) {
-		if(!isset($p['lang'])) $p['lang'] = $this->lang;
-		if(!isset($p['access_token'])) $p['access_token'] = $this->token;
-		if(!isset($p['v'])) $p['v'] = $this->v;
+	public function call(string $m, array $p = null) {
+		if(extension_loaded('curl')) {
+			if($p === null) {
+				$p = array();
+			}
 
-		$a = $p['offToken'] ? "VKAndroidApp/5.11.1-2316" : "VKBot/1.0";
-		unset($p['offToken']);
+			if(!isset($p['lang'])) $p['lang'] = $this->lang;
+			if(!isset($p['access_token'])) $p['access_token'] = $this->token;
+			if(!isset($p['v'])) $p['v'] = $this->v;
 
-		$ch = curl_init("https://api.vk.com/method/{$m}");
-		curl_setopt_array($ch, array(
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_USERAGENT => $a,
-			CURLOPT_POST => true,
-			CURLOPT_POSTFIELDS => $p
-		));
-		$json = curl_exec($ch);
-		curl_close($ch);
+			$a = $p['offToken'] ? "VKAndroidApp/5.11.1-2316" : "VKBot/1.0";
+			unset($p['offToken']);
 
-		return json_decode($json, true);
+			$ch = curl_init("https://api.vk.com/method/{$m}");
+			curl_setopt_array($ch, array(
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_USERAGENT => $a,
+				CURLOPT_POST => true,
+				CURLOPT_POSTFIELDS => $p
+			));
+			$json = curl_exec($ch);
+			curl_close($ch);
+
+			return json_decode($json, true);
+		}
+
+		return false;
 	}
 
 	/**
@@ -75,19 +87,23 @@ class VK {
 	 *
 	 * @param string $url Адрес загрузки
 	 * @param string $file Путь к файлу
-	 * @return array json_decode($json, true)
+	 * @return array
 	 */
-	function upload($url, $file) {
-		$ch = curl_init($url);
-		curl_setopt_array($ch, array(
-			CURLOPT_POST => true,
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_POSTFIELDS => array('file' => new CURLfile($file))
-		));
-		$json = curl_exec($ch);
-		curl_close($ch);
+	public function upload($url, $file) {
+		if(extension_loaded('curl')) {
+			$ch = curl_init($url);
+			curl_setopt_array($ch, array(
+				CURLOPT_POST => true,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_POSTFIELDS => array('file' => new CURLfile($file))
+			));
+			$json = curl_exec($ch);
+			curl_close($ch);
 
-		return json_decode($json, true);
+			return json_decode($json, true);
+		}
+
+		return false;
 	}
 
 	/**
@@ -103,9 +119,6 @@ class VK {
 	/**
 	 * Отправка сообщения
 	 *
-	 * Для проверки ошибки нужно использовать ===
-	 * Например: if(send(1, 'Привет!') !== true) {...}
-	 *
 	 * @param int $peer_id Идентификатор назначения
 	 * @param string $message Текст сообщения
 	 * @param string $attachment Вложения
@@ -114,7 +127,20 @@ class VK {
 	 * @param int $dont_parse_links Нужны ли сниппеты
 	 * @return boolean
 	 */
-	function send(int $peer_id, string $message, string $attachment = '', string $keyboard = '{"one_time": false, "buttons": []}', int $reply_to = 0, int $dont_parse_links = 0) {
+	function send(int $peer_id, string $message, string $attachment = null, string $keyboard = null, int $reply_to = null, int $dont_parse_links = null) {
+		if($attachment === null) {
+			$attachment = '';
+		}
+		if($keyboard === null) {
+			$keyboard = '{"one_time": false, "buttons": []}';
+		}
+		if($reply_to === null) {
+			$reply_to = 0;
+		}
+		if($dont_parse_links === null) {
+			$dont_parse_links = 0;
+		}
+
 		$p = array();
 
 		$p['peer_id'] = $peer_id; // куда отправляем
@@ -140,7 +166,7 @@ class VK {
 	 * Загрузка фотографий в сообщения
 	 *
 	 * @param string $filename Путь до файла (абсолютный/относительный)
-	 * @return array $save
+	 * @return array
 	 */
 	public function uploadPhoto(string $filename) {
 		$server = $this->call('photos.getMessagesUploadServer')['response']['upload_url']; // получаем адрес для загрузки фотографии в сообщения
@@ -154,10 +180,14 @@ class VK {
 	 *
 	 * @param string $filename Путь до файла (абсолютный/относительный)
 	 * @param string $type Тип документа, vk.com/dev/docs.getMessagesUploadServer
-	 * @return array $save
+	 * @return array
 	 */
-	public function uploadDoc(string $filename, string $type = 'doc') {
-		$server = $this->call('docs.getMessagesUploadServer')['response']['upload_url']; // получаем адрес для загрузки фотографии в сообщения
+	public function uploadDoc(string $filename, string $type = null) {
+		if($type === null) {
+			$type = 'doc';
+		}
+
+		$server = $this->call('docs.getMessagesUploadServer', array('type' => $type))['response']['upload_url']; // получаем адрес для загрузки фотографии в сообщения
 		$upload = $this->upload($server, $filename); // загружаем фотографию на сервер ВКонтакте
 		$save = $this->call('docs.save', array('file' => $upload['file'])); // сохраняем фотографию
 		return $save;
@@ -199,7 +229,7 @@ class VK {
 	 * @param string $male Текст, если указан мужской пол
 	 * @param string $female Текст, если указан женский пол
 	 * @param int $sex Предопределённый пол, необязательный параметр
-	 * @return string $male or $female
+	 * @return string
 	 */
 	public function getTextBySex(int $user_id, string $male, string $female, int $sex = -1) {
 		if($sex == -1) {
