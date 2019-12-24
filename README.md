@@ -1,5 +1,5 @@
 # VK PHP Framework
-Фреймворк для написания ботов ВКонтакте. **Рекумендуется использовать Senses Engine:** [click](https://github.com/slmatthew/senses-engine)
+Фреймворк для написания ботов ВКонтакте. **Рекомендуется использовать Senses Engine:** [click](https://github.com/slmatthew/senses-engine)
 
 ## Установка
 Для установки фреймворка достаточно скачать файл [vk.php](https://github.com/slmatthew/vk-php-bot/blob/master/src/vk.php).
